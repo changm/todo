@@ -4,13 +4,26 @@ var GLOBAL_ID = 0;
 var ALL_NEW = [];
 var ALL_DELETES = [];
 var ALL_EDITED = [];
+var ALL_ENTRIES = {};
+
+function isDuplicate(aTodo) {
+  return aTodo in ALL_ENTRIES;
+}
+
+function addToDuplicateChecker(aTodoText) {
+  ALL_ENTRIES[aTodoText] = true;
+}
+
+function removeFromDuplicateChecker(aTodoText) {
+  delete ALL_ENTRIES[aTodoText];
+}
 
 function updateServer() {
   updateData(ALL_DELETES, ALL_NEW, ALL_EDITED);
 
   ALL_NEW = [];
   ALL_DELETES = [];
-  //ALL_EDITED = [];
+  ALL_EDITED = [];
 }
 
 function listenToAddButton() {
@@ -22,11 +35,11 @@ function listenToAddButton() {
 }
 
 // Returns a button with a label and will call aOnclickEvent when clicked.
-function createButton(aId, aLabel, aOnclickEvent) {
+function createButton(aId, aLabel, aOnclickEvent, aArg) {
   var button = document.createElement("button");
   button.className = "ui button";
   button.onclick = function() {
-    aOnclickEvent(button);
+    aOnclickEvent(button, aArg);
   }
 
   button.innerHTML = aLabel;
@@ -34,12 +47,16 @@ function createButton(aId, aLabel, aOnclickEvent) {
   return button;
 }
 
-function saveEdit(aButton) {
+function saveEdit(aButton, aOldText) {
   var editId = getEditId(aButton.id);
   var editInputLabelId = getEditLabelId(aButton.id);
 
   var editInputLabel = document.getElementById(editInputLabelId);
   var currentText = editInputLabel.value;
+  if (isDuplicate(currentText)) {
+    alert("Duplicate text: " + currentText + " choose something else");
+    currentText = aOldText;
+  }
 
   var rowParent = document.getElementById(getTodoRowParentId(aButton.id));
 
@@ -58,10 +75,6 @@ function editItem(aButton) {
   var currentText = editIdDiv.innerHTML;
   var rowParent = document.getElementById(getTodoRowParentId(aButton.id));
 
-  // Make this an input instead
-  //var editField = document.createElement("input");
-  //editField.setAttribute('type', 'text');
-
   // Hmm, there's probably a JS way to do this rather than looking at the html
   editIdDiv.className = "ui action input column";
 
@@ -69,7 +82,7 @@ function editItem(aButton) {
   var editInputLabelId = getEditLabelId(aButton.id);
   editIdDiv.innerHTML = "<input placeholder='" + currentText + "' type='text' id='" + editInputLabelId + "'>"
 
-  var editButton = createButton(aButton.id, "Edit Selection", saveEdit);
+  var editButton = createButton(aButton.id, "Edit Selection", saveEdit, currentText);
   editIdDiv.appendChild(editButton);
 }
 
@@ -84,11 +97,16 @@ function deleteItem(aButton) {
 }
 
 function appendTodoItem(aId, aItem) {
-  var todoText = aItem;
-  if (todoText == undefined) {
-    var todoText = document.getElementById("newTodoItem").value;
-    aId = ++GLOBAL_ID;
+  var isNewItem = aItem == undefined;
+  var todoText = isNewItem ? document.getElementById("newTodoItem").value : aItem;
 
+  if (isDuplicate(todoText)) {
+    alert("Duplicate item");
+    return;
+  }
+
+  if (isNewItem) {
+    aId = ++GLOBAL_ID;
     var newData = "{ \"" + aId + "\" : \"" + todoText + "\" }";
     ALL_NEW.push(JSON.parse(newData));
   }
@@ -123,6 +141,8 @@ function appendTodoItem(aId, aItem) {
 
   var listArea = document.getElementById(GLOBAL_LIST_ID);
   listArea.appendChild(newItem);
+
+  addToDuplicateChecker(todoText);
 }
 
 function displayTodoItems(todoItems) {
