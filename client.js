@@ -2,6 +2,9 @@
 
 var GLOBALID = 0;
 var TODO_ID_PREFIX = "ROW_ID"
+var GLOBAL_LIST_ID = "list";
+var EDIT_ID_PREFIX = "EDIT";
+var EDIT_LABEL_POSTFIX = "LABEL"
 
 function listenToAddButton() {
   var button = document.getElementById("addTodo");
@@ -9,26 +12,65 @@ function listenToAddButton() {
 }
 
 // Returns a button with a label and will call aOnclickEvent when clicked.
-function createButton(aLabel, aOnclickEvent) {
+function createButton(aId, aLabel, aOnclickEvent) {
   var button = document.createElement("button");
   button.className = "ui button";
-  button.onclick = aOnclickEvent;
+  button.onclick = function() {
+    aOnclickEvent(button);
+  }
+
   button.innerHTML = aLabel;
+  button.id = aId;
   return button;
 }
 
-function editItem() {
-  alert("Deleting item");
+function saveEdit(aButton) {
+  var editId = EDIT_ID_PREFIX + aButton.id;
+  var editInputLabelId = editId + EDIT_LABEL_POSTFIX;
+
+  var editInputLabel = document.getElementById(editInputLabelId);
+  var currentText = editInputLabel.value;
+
+  var rowParent = document.getElementById(TODO_ID_PREFIX + aButton.id);
+
+  var editIdDiv = document.getElementById(editId);
+  editIdDiv.removeChild(aButton);
+
+  editIdDiv.innerHTML = currentText;
 }
 
-function deleteItem() {
-  alert("Deleting item");
+function editItem(aButton) {
+  var editId = EDIT_ID_PREFIX + aButton.id;
+  var editIdDiv = document.getElementById(editId);
+  var currentText = editIdDiv.innerHTML;
+  var rowParent = document.getElementById(TODO_ID_PREFIX + aButton.id);
+
+  // Make this an input instead
+  //var editField = document.createElement("input");
+  //editField.setAttribute('type', 'text');
+
+  // Hmm, there's probably a JS way to do this rather than looking at the html
+  editIdDiv.className = "ui action input column";
+
+  // Make the input
+  var editInputLabelId = editId + EDIT_LABEL_POSTFIX;
+  editIdDiv.innerHTML = "<input placeholder='" + currentText + "' type='text' id='" + editInputLabelId + "'>"
+
+  var editButton = createButton(aButton.id, "Edit Selection", saveEdit);
+  editIdDiv.appendChild(editButton);
+}
+
+function deleteItem(aButton) {
+  var divParentId = TODO_ID_PREFIX + aButton.id;
+  var rowParentDiv = document.getElementById(divParentId);
+  var listRoot = document.getElementById(GLOBAL_LIST_ID);
+  listRoot.removeChild(rowParentDiv);
 }
 
 function appendTodoItem(aId, aItem) {
   var todoText = aItem;
   if (todoText == undefined) {
-    var todoText = document.getElementById("newTodoItem").value; 
+    var todoText = document.getElementById("newTodoItem").value;
   }
 
   // Each todo item consists of a label, edit, and a delete button
@@ -40,32 +82,31 @@ function appendTodoItem(aId, aItem) {
   // </div>
   var newItem = document.createElement("div");
   newItem.className = "row";
-  //newItem.id = TODO_ID_PREFIX + GLOBALID++;
-  newItem.id = aId;
+  newItem.id = TODO_ID_PREFIX + aId;
 
   var name = document.createElement("div");
   name.className = "column";
-  //name.innerHTML = todoText;
   name.innerHTML = todoText;
+  name.id = EDIT_ID_PREFIX + aId;
 
   var editLabel = document.createElement("div");
   editLabel.className = "column";
-  editLabel.appendChild(createButton("Edit", editItem));
+  editLabel.appendChild(createButton(aId, "Edit", editItem));
 
   var deleteLabel = document.createElement("div");
   deleteLabel.className = "column";
-  deleteLabel.appendChild(createButton("Delete", deleteItem));
+  deleteLabel.appendChild(createButton(aId, "Delete", deleteItem));
 
   newItem.appendChild(name);
   newItem.appendChild(editLabel);
   newItem.appendChild(deleteLabel);
 
-  var listArea = document.getElementById("list");
+  var listArea = document.getElementById(GLOBAL_LIST_ID);
   listArea.appendChild(newItem);
 }
 
 function displayTodoItems(todoItems) {
-  var listArea = document.getElementById("list");
+  var listArea = document.getElementById(GLOBAL_LIST_ID);
   var savedItems = JSON.parse(todoItems);
 
   for (var i = 0; i < savedItems.length; i++) {
