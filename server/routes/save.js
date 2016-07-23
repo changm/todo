@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var sql = require('pg');
 
-function connectToDB() {
+function getAllRows(res) {
   var client = new sql.Client({
     user: 'todo',
     password: 'todo',
@@ -18,19 +18,15 @@ function connectToDB() {
 
     var selectAll = client.query("SELECT * FROM todo", function(err, results) {
       if (err) console.log(err.message);
-
-      console.log(results.rows[0]);
+      res.send(results.rows);
     }); // end select; 
   });
 }
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  connectToDB();
-
-  // Disable cors for now
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.send('did some things');
+  getAllRows(res);
 });
 
 module.exports = router;
