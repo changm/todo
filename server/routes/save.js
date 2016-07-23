@@ -3,6 +3,7 @@ var router = express.Router();
 var sql = require('pg');
 var url = require('url');
 var globalConnection;
+var assert = require('assert');
 
 function connectToDatabase() {
   var client = new sql.Client({
@@ -22,35 +23,38 @@ function connectToDatabase() {
 
 connectToDatabase();
 
-function deleteItems(aClient, aRes, aDeleted) {
+function deleteItems(aClient, aRes, aDeleted, aCallback) {
   for (var i = 0; i < aDeleted.length; i++) {
     var key = aDeleted[i];
-    console.log(key);
-
     var sqlQuery = "DELETE FROM todo WHERE id = " + key + ";";
     var deleteQuery = aClient.query(sqlQuery, function(err, results) {
-        if (err) console.log(err.message);
-        return;
+      if (err) console.log(err.message);
+      if (aCallback) aCallback();
+      return;
     }); // end select;
   }
 }
 
-function addItems(aClient, aRes, aNewItems) {
+// All the values belong come in array format [ {id : value} ]
+function addItems(aClient, aRes, aNewItems, aCallback) {
+  console.log("Adding items: " + aNewItems);
   for (var i = 0; i < aNewItems.length; i++) {
     // This is particularly ugly :/
     var item = aNewItems[i];
     var key = Object.keys(item)[0];
     var value = item[key];
+    console.log("Adding : " + key + " value: " + value);
 
     var sqlQuery = "INSERT INTO todo VALUES (" + key + ", '" + value + "');";
     var insert = aClient.query(sqlQuery, function(err, results) {
-        if (err) console.log(err.message);
-        return;
+      if (err) console.log(err.message);
+      if (aCallback) aCallback();
+      return;
     }); // end select;
   }
 }
 
-function editItems(aClient, aRes, aEditedItems) {
+function editItems(aClient, aRes, aEditedItems, aCallback) {
   for (var i = 0; i < aEditedItems.length; i++) {
     // This is particularly ugly :/
     var item = aEditedItems[i];
@@ -59,17 +63,18 @@ function editItems(aClient, aRes, aEditedItems) {
 
     var sqlQuery = "UPDATE todo SET note = '" + value + "' WHERE id = " + key + ";";
     var editQuery = aClient.query(sqlQuery, function(err, results) {
-        if (err) console.log(err.message);
-        return;
+      if (err) console.log(err.message);
+      if (aCallback) aCallback();
+      return;
     }); // end select;
   }
 }
 
 function getAllRows(aClient, aRes, arg) {
   var selectAll = aClient.query("SELECT * FROM todo", function(err, results) {
-      if (err) console.log(err.message);
-      aRes.send(results.rows);
-      return;
+    if (err) console.log(err.message);
+    aRes.send(results.rows);
+    return;
   }); // end select;
 }
 
@@ -105,5 +110,76 @@ router.get('/benchmark', function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 });
 
+var TEST_DATA_ID = 1;
+var TEST_DATA_ENTRY = "test data";
+function getTestData() {
+  var testData = "{ \"" + TEST_DATA_ID + "\" : \"" + TEST_DATA_ENTRY + "\" }"; 
+  var newData = [ JSON.parse(testData) ];
+  return newData;
+}
+
+function testInsertData(aClient, aPipeline) {
+  console.log("Test inserting data");
+  // Should be a way to just directly create json with variables :/
+  addItems(aClient, undefined, getTestData(), aPipeline);
+}
+
+function testVerifyInsert(aClient, aPipeline) {
+  console.log("Verifying insert");
+  var selectAll = aClient.query("SELECT * FROM todo", function(err, results) {
+    if (err) console.log(err.message);
+    var id = results.rows[0].id;
+    var value = results.rows[0].note;
+
+    if ((id != TEST_DATA_ID) || (TEST_DATA_ENTRY != value)) {
+      throw Error("Invalid insertion");
+    }
+
+    aPipeline();
+  });
+}
+
+function testVerifyDelete(aClient, aPipeline) {
+  console.log("Verifying delete");
+
+}
+
+function testDeleteData(aClient, aPipeline) {
+  console.log("Test delete data");
+}
+
+function testEditData(aClient, aPipeline) {
+  console.log("Test edit data");
+}
+
+function testDeleteDatabase(aClient, aPipeline) {
+  console.log("Deleting database for fresh start " + aClient);
+  var sqlQuery = "DELETE FROM todo;";
+  aClient.query(sqlQuery, function(err, results) {
+    if (err) console.log(err.message);
+    aPipeline();
+  });
+}
+
+var testPipeline = [];
+function executeNext() {
+  if (testPipeline.length == 0) return;
+  testPipeline.pop()(globalConnection, executeNext);
+}
+
+router.get('/test', function(req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  console.log("Testing server side things");
+
+  testPipeline = [ testEditData,
+                   testInsertData,
+                   testVerifyDelete,
+                   testDeleteData,
+                   testVerifyInsert,
+                   testInsertData,
+                   testDeleteDatabase ];
+
+  executeNext();
+});
 
 module.exports = router;
