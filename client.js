@@ -1,11 +1,5 @@
 "use strict";
 
-var GLOBALID = 0;
-var TODO_ID_PREFIX = "ROW_ID"
-var GLOBAL_LIST_ID = "list";
-var EDIT_ID_PREFIX = "EDIT";
-var EDIT_LABEL_POSTFIX = "LABEL"
-
 function listenToAddButton() {
   var button = document.getElementById("addTodo");
   button.onclick = appendTodoItem;
@@ -25,13 +19,13 @@ function createButton(aId, aLabel, aOnclickEvent) {
 }
 
 function saveEdit(aButton) {
-  var editId = EDIT_ID_PREFIX + aButton.id;
-  var editInputLabelId = editId + EDIT_LABEL_POSTFIX;
+  var editId = getEditId(aButton.id);
+  var editInputLabelId = getEditLabelId(aButton.id);
 
   var editInputLabel = document.getElementById(editInputLabelId);
   var currentText = editInputLabel.value;
 
-  var rowParent = document.getElementById(TODO_ID_PREFIX + aButton.id);
+  var rowParent = document.getElementById(getTodoRowParentId(aButton.id));
 
   var editIdDiv = document.getElementById(editId);
   editIdDiv.removeChild(aButton);
@@ -40,10 +34,10 @@ function saveEdit(aButton) {
 }
 
 function editItem(aButton) {
-  var editId = EDIT_ID_PREFIX + aButton.id;
+  var editId = getEditId(aButton.id);
   var editIdDiv = document.getElementById(editId);
   var currentText = editIdDiv.innerHTML;
-  var rowParent = document.getElementById(TODO_ID_PREFIX + aButton.id);
+  var rowParent = document.getElementById(getTodoRowParentId(aButton.id));
 
   // Make this an input instead
   //var editField = document.createElement("input");
@@ -53,7 +47,7 @@ function editItem(aButton) {
   editIdDiv.className = "ui action input column";
 
   // Make the input
-  var editInputLabelId = editId + EDIT_LABEL_POSTFIX;
+  var editInputLabelId = getEditLabelId(aButton.id);
   editIdDiv.innerHTML = "<input placeholder='" + currentText + "' type='text' id='" + editInputLabelId + "'>"
 
   var editButton = createButton(aButton.id, "Edit Selection", saveEdit);
@@ -61,7 +55,7 @@ function editItem(aButton) {
 }
 
 function deleteItem(aButton) {
-  var divParentId = TODO_ID_PREFIX + aButton.id;
+  var divParentId = getTodoRowParentId(aButton.id);
   var rowParentDiv = document.getElementById(divParentId);
   var listRoot = document.getElementById(GLOBAL_LIST_ID);
   listRoot.removeChild(rowParentDiv);
