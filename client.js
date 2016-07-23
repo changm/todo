@@ -61,13 +61,13 @@ function appendTodoItem() {
 
 function displayTodoItems() {
   var listArea = document.getElementById("list");
+  sendRequest();
 }
 
 function clearState() {
   // Semantic likes to keep text in the input field on refresh, so reload
   var addItemSearch = document.getElementById("newTodoItem");
   addItemSearch.value = "";
-
 }
 
 function attachEvents() {
