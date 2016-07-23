@@ -1,5 +1,8 @@
 "use strict";
 
+var GLOBALID = 0;
+var TODO_ID_PREFIX = "ROW_ID"
+
 function listenToAddButton() {
   var button = document.getElementById("addTodo");
   button.onclick = appendTodoItem;
@@ -14,12 +17,27 @@ function createButton(aLabel, aOnclickEvent) {
   return button;
 }
 
+function editItem() {
+  alert("Deleting item");
+}
+
+function deleteItem() {
+  alert("Deleting item");
+}
+
 function appendTodoItem() {
   var todoText = document.getElementById("newTodoItem").value;
 
   // Each todo item consists of a label, edit, and a delete button
+  // Create: semantic:
+  // <div class="row">
+  // <div class="column"></div>
+  // <div class="column"></div>
+  // <div class="column"></div>
+  // </div>
   var newItem = document.createElement("div");
   newItem.className = "row";
+  newItem.id = TODO_ID_PREFIX + GLOBALID++;
 
   var name = document.createElement("div");
   name.className = "column";
@@ -27,12 +45,11 @@ function appendTodoItem() {
 
   var editLabel = document.createElement("div");
   editLabel.className = "column";
-  editLabel.appendChild(createButton("Edit"));
-
+  editLabel.appendChild(createButton("Edit", editItem));
 
   var deleteLabel = document.createElement("div");
   deleteLabel.className = "column";
-  deleteLabel.appendChild(createButton("Delete"));
+  deleteLabel.appendChild(createButton("Delete", deleteItem));
 
   newItem.appendChild(name);
   newItem.appendChild(editLabel);
@@ -46,10 +63,17 @@ function displayTodoItems() {
   var listArea = document.getElementById("list");
 }
 
+function clearState() {
+  // Semantic likes to keep text in the input field on refresh, so reload
+  var addItemSearch = document.getElementById("newTodoItem");
+  addItemSearch.value = "";
+
+}
+
 function attachEvents() {
+  clearState();
   listenToAddButton();
   displayTodoItems();
-  appendTodoItem();
 }
 
 window.onload = attachEvents;
