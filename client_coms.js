@@ -18,6 +18,25 @@ function sendRequest(callback) {
   getAllItems.send();
 }
 
+// Expected format to be in JSON already
+function updateData(aDeleted, aNewItems, aEditedItems) {
+  var updateRequest = new XMLHttpRequest();
+
+  var newData = {"data" : [aDeleted, aNewItems, aEditedItems] };
+  newData = encodeURIComponent(JSON.stringify(newData));
+
+  updateRequest.open("GET", HOST + "save/update?=" + newData);
+
+  updateRequest.onreadystatechange = function() {
+    if (updateRequest.readyState == XMLHttpRequest.DONE) {
+      // Things worked
+    }
+  }
+
+  //var updateData = {"data" : [aDeleted, aNewItems, aEditedItems] };
+  updateRequest.send();
+}
+
 function recvRequest() {
 
 }

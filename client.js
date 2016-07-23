@@ -1,8 +1,20 @@
 "use strict";
 
+var ALL_NEW = {};
+var ALL_DELETES = {};
+var ALL_EDITED = {};
+
+function updateServer() {
+  ALL_NEW = { "id" : 5, "note" : "testing" };
+  updateData(ALL_DELETES, ALL_NEW, ALL_EDITED);
+}
+
 function listenToAddButton() {
-  var button = document.getElementById("addTodo");
-  button.onclick = appendTodoItem;
+  var addButton = document.getElementById("addTodo");
+  addButton.onclick = appendTodoItem;
+
+  var saveButton = document.getElementById("save");
+  saveButton.onclick = updateServer;
 }
 
 // Returns a button with a label and will call aOnclickEvent when clicked.
