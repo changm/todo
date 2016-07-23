@@ -43,7 +43,6 @@ function addItems(aClient, aRes, aNewItems, aCallback) {
     var item = aNewItems[i];
     var key = Object.keys(item)[0];
     var value = item[key];
-    console.log("Adding : " + key + " value: " + value);
 
     var sqlQuery = "INSERT INTO todo VALUES (" + key + ", '" + value + "');";
     var insert = aClient.query(sqlQuery, function(err, results) {
@@ -122,7 +121,7 @@ function getTestData(aId, aValue) {
 function testInsertData(aClient, aPipeline) {
   console.log("Test inserting data");
   // Should be a way to just directly create json with variables :/
-  addItems(aClient, undefined, getTestData(TEST_DATA_ID, TEST_EDIT_ENTRY), aPipeline);
+  addItems(aClient, undefined, getTestData(TEST_DATA_ID, TEST_DATA_ENTRY), aPipeline);
 }
 
 function testVerifyInsert(aClient, aPipeline) {
@@ -136,6 +135,7 @@ function testVerifyInsert(aClient, aPipeline) {
       throw new Error("Invalid insertion");
     }
 
+    console.log("SUCCESS: INSERT DATA");
     aPipeline();
   });
 }
@@ -148,6 +148,23 @@ function testVerifyDelete(aClient, aPipeline) {
       throw new Error("Did not delete data");
     }
 
+    console.log("SUCCESS: DELETE DATA");
+    aPipeline();
+  });
+}
+
+function testVerifyEdit(aClient, aPipeline) {
+  console.log("Verifying edit");
+  var selectAll = aClient.query("SELECT * FROM todo", function(err, results) {
+    if (err) console.log(err.message);
+    var id = results.rows[0].id;
+    var value = results.rows[0].note;
+
+    if ((id != TEST_DATA_ID) || (TEST_EDIT_ENTRY != value)) {
+      throw new Error("Invalid insertion");
+    }
+
+    console.log("SUCCESS: EDIT DATA");
     aPipeline();
   });
 }
@@ -160,6 +177,8 @@ function testDeleteData(aClient, aPipeline) {
 
 function testEditData(aClient, aPipeline) {
   console.log("Test edit data");
+  var editData = getTestData(TEST_DATA_ID, TEST_EDIT_ENTRY);
+  editItems(aClient, undefined, editData, aPipeline);
 }
 
 function testDeleteDatabase(aClient, aPipeline) {
@@ -181,7 +200,9 @@ router.get('/test', function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   console.log("Testing server side things");
 
-  testPipeline = [ testEditData,
+  testPipeline = [ testVerifyEdit,
+                   testEditData,
+                   testVerifyInsert,
                    testInsertData,
                    testVerifyDelete,
                    testDeleteData,
@@ -190,6 +211,7 @@ router.get('/test', function(req, res, next) {
                    testDeleteDatabase ];
 
   executeNext();
+  res.send("Read console for test results");
 });
 
 module.exports = router;
