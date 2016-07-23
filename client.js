@@ -18,8 +18,12 @@ function removeFromDuplicateChecker(aTodoText) {
   delete ALL_ENTRIES[aTodoText];
 }
 
+function savedData() {
+  alert("Saved all the data");
+}
+
 function updateServer() {
-  updateData(ALL_DELETES, ALL_NEW, ALL_EDITED);
+  updateData(ALL_DELETES, ALL_NEW, ALL_EDITED, savedData);
 
   ALL_NEW = [];
   ALL_DELETES = [];
@@ -92,7 +96,6 @@ function deleteItem(aButton) {
   var listRoot = document.getElementById(GLOBAL_LIST_ID);
   listRoot.removeChild(rowParentDiv);
 
-  alert("Deleting id: " + aButton.id);
   ALL_DELETES.push(aButton.id);
 }
 
@@ -143,6 +146,7 @@ function appendTodoItem(aId, aItem) {
   listArea.appendChild(newItem);
 
   addToDuplicateChecker(todoText);
+  clearAddButton();
 }
 
 function displayTodoItems(todoItems) {
@@ -159,14 +163,14 @@ function displayTodoItems(todoItems) {
   GLOBAL_ID = nextId;
 }
 
-function clearState() {
+function clearAddButton() {
   // Semantic likes to keep text in the input field on refresh, so reload
   var addItemSearch = document.getElementById("newTodoItem");
   addItemSearch.value = "";
 }
 
 function attachEvents() {
-  clearState();
+  clearAddButton();
   listenToAddButton();
   sendRequest(displayTodoItems);
 }

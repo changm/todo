@@ -19,7 +19,7 @@ function sendRequest(callback) {
 }
 
 // Expected format to be in JSON already
-function updateData(aDeleted, aNewItems, aEditedItems) {
+function updateData(aDeleted, aNewItems, aEditedItems, aCallback) {
   var updateRequest = new XMLHttpRequest();
 
   var newData = {"data" : [aDeleted, aNewItems, aEditedItems] };
@@ -29,7 +29,7 @@ function updateData(aDeleted, aNewItems, aEditedItems) {
 
   updateRequest.onreadystatechange = function() {
     if (updateRequest.readyState == XMLHttpRequest.DONE) {
-      // Things worked
+      aCallback();
     }
   }
 

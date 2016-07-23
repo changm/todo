@@ -20,15 +20,11 @@ function getConnection(aCallback, aRes, aArg) {
 }
 
 function deleteItems(aClient, aRes, aDeleted) {
-  console.log("Deleting items: " + aDeleted);
-   //DELETE FROM todo WHERE id=3;
-
   for (var i = 0; i < aDeleted.length; i++) {
     var key = aDeleted[i];
     console.log(key);
 
     var sqlQuery = "DELETE FROM todo WHERE id = " + key + ";";
-    console.log("SQL QUERY IS: " + sqlQuery);
     var deleteQuery = aClient.query(sqlQuery, function(err, results) {
         if (err) console.log(err.message);
         return;
@@ -43,9 +39,6 @@ function addItems(aClient, aRes, aNewItems) {
     var key = Object.keys(item)[0];
     var value = item[key];
 
-    console.log(key);
-    console.log(value);
-
     var sqlQuery = "INSERT INTO todo VALUES (" + key + ", '" + value + "');";
     var insert = aClient.query(sqlQuery, function(err, results) {
         if (err) console.log(err.message);
@@ -55,17 +48,11 @@ function addItems(aClient, aRes, aNewItems) {
 }
 
 function editItems(aClient, aRes, aEditedItems) {
-  // UPDATE todo SET note='test update' WHERE id=1;
-  console.log("Editing items: " + aEditedItems);
-
   for (var i = 0; i < aEditedItems.length; i++) {
     // This is particularly ugly :/
     var item = aEditedItems[i];
     var key = Object.keys(item)[0];
     var value = item[key];
-
-    console.log(key);
-    console.log(value);
 
     var sqlQuery = "UPDATE todo SET note = '" + value + "' WHERE id = " + key + ";";
     var editQuery = aClient.query(sqlQuery, function(err, results) {
@@ -103,10 +90,6 @@ router.get('/update', function(req, res, next) {
   var deleted = data[0];
   var newItems = data[1];
   var edited = data[2];
-
-  console.log(deleted);
-  console.log(newItems);
-  console.log(edited);
 
   getConnection(deleteItems, res, deleted);
   getConnection(addItems, res, newItems);
