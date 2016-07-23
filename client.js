@@ -1,12 +1,16 @@
 "use strict";
 
-var ALL_NEW = {};
-var ALL_DELETES = {};
-var ALL_EDITED = {};
+var GLOBAL_ID = 0;
+var ALL_NEW = [];
+var ALL_DELETES = [];
+var ALL_EDITED = [];
 
 function updateServer() {
-  ALL_NEW = { "id" : 5, "note" : "testing" };
   updateData(ALL_DELETES, ALL_NEW, ALL_EDITED);
+
+  ALL_NEW = [];
+  ALL_DELETES = [];
+  ALL_EDITED = [];
 }
 
 function listenToAddButton() {
@@ -43,6 +47,9 @@ function saveEdit(aButton) {
   editIdDiv.removeChild(aButton);
 
   editIdDiv.innerHTML = currentText;
+
+  var editData = "{ \"" + aButton.id + "\" : \"" + currentText + "\" }";
+  ALL_EDITED.push(JSON.parse(editData));
 }
 
 function editItem(aButton) {
@@ -71,12 +78,18 @@ function deleteItem(aButton) {
   var rowParentDiv = document.getElementById(divParentId);
   var listRoot = document.getElementById(GLOBAL_LIST_ID);
   listRoot.removeChild(rowParentDiv);
+
+  ALL_DELETES.push(aButton.id);
 }
 
 function appendTodoItem(aId, aItem) {
   var todoText = aItem;
   if (todoText == undefined) {
     var todoText = document.getElementById("newTodoItem").value;
+    aId = ++GLOBAL_ID;
+
+    var newData = "{ \"" + aId + "\" : \"" + todoText + "\" }";
+    ALL_NEW.push(JSON.parse(newData));
   }
 
   // Each todo item consists of a label, edit, and a delete button
@@ -114,11 +127,15 @@ function appendTodoItem(aId, aItem) {
 function displayTodoItems(todoItems) {
   var listArea = document.getElementById(GLOBAL_LIST_ID);
   var savedItems = JSON.parse(todoItems);
+  var nextId = 0;
 
   for (var i = 0; i < savedItems.length; i++) {
     var entry = savedItems[i];
+    nextId = Math.max(entry.id, nextId);
     appendTodoItem(entry.id, entry.note);
   }
+
+  GLOBAL_ID = nextId;
 }
 
 function clearState() {

@@ -24,6 +24,18 @@ function getAllRows(res) {
   });
 }
 
+function deleteItems(aDeleted) {
+
+}
+
+function addItems(aNewItems) {
+
+}
+
+function editItems(aEditedItems) {
+
+}
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -44,7 +56,11 @@ router.get('/update', function(req, res, next) {
   var newItems = data[1];
   var edited = data[2];
 
-  console.log(newItems);
+  console.log(data);
+
+  deleteItems(deleted);
+  addItems(newItems);
+  editItems(edited);
 
   res.send("update all the things");
 });

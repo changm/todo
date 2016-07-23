@@ -1,4 +1,3 @@
-var GLOBALID = 0;
 var TODO_ID_PREFIX = "ROW_ID"
 var GLOBAL_LIST_ID = "list";
 var EDIT_ID_PREFIX = "EDIT";
