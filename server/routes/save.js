@@ -112,8 +112,9 @@ router.get('/benchmark', function(req, res, next) {
 
 var TEST_DATA_ID = 1;
 var TEST_DATA_ENTRY = "test data";
-function getTestData() {
-  var testData = "{ \"" + TEST_DATA_ID + "\" : \"" + TEST_DATA_ENTRY + "\" }"; 
+var TEST_EDIT_ENTRY = "edit data";
+function getTestData(aId, aValue) {
+  var testData = "{ \"" + aId + "\" : \"" + aValue + "\" }";
   var newData = [ JSON.parse(testData) ];
   return newData;
 }
@@ -121,7 +122,7 @@ function getTestData() {
 function testInsertData(aClient, aPipeline) {
   console.log("Test inserting data");
   // Should be a way to just directly create json with variables :/
-  addItems(aClient, undefined, getTestData(), aPipeline);
+  addItems(aClient, undefined, getTestData(TEST_DATA_ID, TEST_EDIT_ENTRY), aPipeline);
 }
 
 function testVerifyInsert(aClient, aPipeline) {
@@ -132,7 +133,7 @@ function testVerifyInsert(aClient, aPipeline) {
     var value = results.rows[0].note;
 
     if ((id != TEST_DATA_ID) || (TEST_DATA_ENTRY != value)) {
-      throw Error("Invalid insertion");
+      throw new Error("Invalid insertion");
     }
 
     aPipeline();
@@ -141,11 +142,20 @@ function testVerifyInsert(aClient, aPipeline) {
 
 function testVerifyDelete(aClient, aPipeline) {
   console.log("Verifying delete");
+  var selectAll = aClient.query("SELECT * FROM todo", function(err, results) {
+    if (err) console.log(err.message);
+    if ((results.rowCount!= 0)) {
+      throw new Error("Did not delete data");
+    }
 
+    aPipeline();
+  });
 }
 
 function testDeleteData(aClient, aPipeline) {
   console.log("Test delete data");
+  var deleteData = [TEST_DATA_ID];
+  deleteItems(aClient, undefined, deleteData, aPipeline);
 }
 
 function testEditData(aClient, aPipeline) {
