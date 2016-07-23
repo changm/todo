@@ -2,8 +2,9 @@ var express = require('express');
 var router = express.Router();
 var sql = require('pg');
 var url = require('url');
+var globalConnection;
 
-function getConnection(aCallback, aRes, aArg) {
+function connectToDatabase() {
   var client = new sql.Client({
     user: 'todo',
     password: 'todo',
@@ -14,10 +15,12 @@ function getConnection(aCallback, aRes, aArg) {
 
   client.connect(function(err) {
     if (err) throw err;
-
-    aCallback(client, aRes, aArg);
+    console.log("Connected successfully");
+    globalConnection = client;
   });
 }
+
+connectToDatabase();
 
 function deleteItems(aClient, aRes, aDeleted) {
   for (var i = 0; i < aDeleted.length; i++) {
@@ -73,8 +76,7 @@ function getAllRows(aClient, aRes, arg) {
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  getConnection(getAllRows, res);
-  //getAllRows(res);
+  getAllRows(globalConnection, res);
 });
 
 // Data comes in deleted, new items, edited items
@@ -91,11 +93,16 @@ router.get('/update', function(req, res, next) {
   var newItems = data[1];
   var edited = data[2];
 
-  getConnection(deleteItems, res, deleted);
-  getConnection(addItems, res, newItems);
-  getConnection(editItems, res, edited);
+  console.log("Connection is: " + globalConnection);
+  deleteItems(globalConnection, res, deleted);
+  addItems(globalConnection, res, newItems);
+  editItems(globalConnection, res, edited);
 
   res.send("update all the things");
+});
+
+router.get('/benchmark', function(req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
 });
 
 
