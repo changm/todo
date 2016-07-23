@@ -66,25 +66,12 @@ function appendTodoItem(aId, aItem) {
 
 function displayTodoItems(todoItems) {
   var listArea = document.getElementById("list");
+  var savedItems = JSON.parse(todoItems);
 
-  appendTodoItem(1, "testing");
-
-  /*
-  var obj = JSON.parse(listArea);
-  alert(obj);
-
-
-  var id = firstItem[0];
-  var item = firstItem[1];
-  appendTodoItem(id, item);
-
-  /*
-  for (var todoItem in todoItems) {
-    var id = todoItem[0];
-    var item = todoItem[1];
-    appendTodoItem(id, item);
+  for (var i = 0; i < savedItems.length; i++) {
+    var entry = savedItems[i];
+    appendTodoItem(entry.id, entry.note);
   }
-  */
 }
 
 function clearState() {
