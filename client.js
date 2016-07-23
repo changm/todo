@@ -25,8 +25,11 @@ function deleteItem() {
   alert("Deleting item");
 }
 
-function appendTodoItem() {
-  var todoText = document.getElementById("newTodoItem").value;
+function appendTodoItem(aId, aItem) {
+  var todoText = aItem;
+  if (todoText == undefined) {
+    var todoText = document.getElementById("newTodoItem").value; 
+  }
 
   // Each todo item consists of a label, edit, and a delete button
   // Create: semantic:
@@ -37,10 +40,12 @@ function appendTodoItem() {
   // </div>
   var newItem = document.createElement("div");
   newItem.className = "row";
-  newItem.id = TODO_ID_PREFIX + GLOBALID++;
+  //newItem.id = TODO_ID_PREFIX + GLOBALID++;
+  newItem.id = aId;
 
   var name = document.createElement("div");
   name.className = "column";
+  //name.innerHTML = todoText;
   name.innerHTML = todoText;
 
   var editLabel = document.createElement("div");
@@ -59,9 +64,27 @@ function appendTodoItem() {
   listArea.appendChild(newItem);
 }
 
-function displayTodoItems() {
+function displayTodoItems(todoItems) {
   var listArea = document.getElementById("list");
-  sendRequest();
+
+  appendTodoItem(1, "testing");
+
+  /*
+  var obj = JSON.parse(listArea);
+  alert(obj);
+
+
+  var id = firstItem[0];
+  var item = firstItem[1];
+  appendTodoItem(id, item);
+
+  /*
+  for (var todoItem in todoItems) {
+    var id = todoItem[0];
+    var item = todoItem[1];
+    appendTodoItem(id, item);
+  }
+  */
 }
 
 function clearState() {
@@ -73,7 +96,7 @@ function clearState() {
 function attachEvents() {
   clearState();
   listenToAddButton();
-  displayTodoItems();
+  sendRequest(displayTodoItems);
 }
 
 window.onload = attachEvents;

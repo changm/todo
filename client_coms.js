@@ -6,12 +6,12 @@ function readAllItems(data) {
   alert(data.responseText);
 }
 
-function sendRequest() {
+function sendRequest(callback) {
   var getAllItems = new XMLHttpRequest();
   getAllItems.open("GET", HOST + "save");
   getAllItems.onreadystatechange = function() {
     if (getAllItems.readyState == XMLHttpRequest.DONE) {
-      alert(getAllItems.responseText);
+      callback(getAllItems.responseText);
     }
   }
 
