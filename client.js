@@ -4,19 +4,6 @@ var GLOBAL_ID = 0;
 var ALL_NEW = [];
 var ALL_DELETES = [];
 var ALL_EDITED = [];
-var ALL_ENTRIES = {};
-
-function isDuplicate(aTodo) {
-  return aTodo in ALL_ENTRIES;
-}
-
-function addToDuplicateChecker(aTodoText) {
-  ALL_ENTRIES[aTodoText] = true;
-}
-
-function removeFromDuplicateChecker(aTodoText) {
-  delete ALL_ENTRIES[aTodoText];
-}
 
 function savedData() {
   alert("Saved all the data");
@@ -36,6 +23,58 @@ function listenToAddButton() {
 
   var saveButton = document.getElementById("save");
   saveButton.onclick = updateServer;
+
+  var testButton = document.getElementById("test");
+  testButton.onclick = runTests;
+}
+
+function getNumOfItems() {
+  var listArea = document.getElementById(GLOBAL_LIST_ID);
+  return listArea.childNodes.length;
+}
+
+function assert(condition, msg) {
+  if (!condition) {
+    alert(msg);
+  }
+}
+
+function clearItems() {
+  var listArea = document.getElementById(GLOBAL_LIST_ID);
+  while (listArea.firstChild) {
+    listArea.removeChild(listArea.firstChild);
+  }
+
+  ALL_NEW = [];
+  ALL_DELETES = [];
+  ALL_EDITED = [];
+  cleanDuplicateChecker();
+}
+
+function runTests() {
+  var testId = 1;
+  var testData = "test data";
+  clearItems();
+
+  appendTodoItem(testId, testData);
+  assert(getNumOfItems() == 1, "Could not append todo item");
+
+  var testButton = createButton(testId);
+  deleteItem(testButton);
+  assert(getNumOfItems() == 0, "Could not delete item");
+
+  appendTodoItem(testId, testData);
+
+  var editButton = editItem(testButton);
+  var oldText = getTodoItemText(testId);
+  var newText = "new text";
+  saveEdit(editButton, oldText, "new text");
+
+  var editedText = getTodoItemText(testId);
+  assert(editedText == newText, "Edited text not complete");
+
+  clearItems();
+  alert("All tests passed");
 }
 
 // Returns a button with a label and will call aOnclickEvent when clicked.
@@ -51,12 +90,14 @@ function createButton(aId, aLabel, aOnclickEvent, aArg) {
   return button;
 }
 
-function saveEdit(aButton, aOldText) {
-  var editId = getEditId(aButton.id);
+function saveEdit(aButton, aOldText, aTestText) {
+  var editId = getTodoListLabelId(aButton.id);
   var editInputLabelId = getEditLabelId(aButton.id);
 
   var editInputLabel = document.getElementById(editInputLabelId);
-  var currentText = editInputLabel.value;
+
+  // Hack to just overwrite the label with aTestText
+  var currentText = aTestText ? aTestText : editInputLabel.value;
   if (isDuplicate(currentText)) {
     alert("Duplicate text: " + currentText + " choose something else");
     currentText = aOldText;
@@ -74,7 +115,7 @@ function saveEdit(aButton, aOldText) {
 }
 
 function editItem(aButton) {
-  var editId = getEditId(aButton.id);
+  var editId = getTodoListLabelId(aButton.id);
   var editIdDiv = document.getElementById(editId);
   var currentText = editIdDiv.innerHTML;
   var rowParent = document.getElementById(getTodoRowParentId(aButton.id));
@@ -88,15 +129,19 @@ function editItem(aButton) {
 
   var editButton = createButton(aButton.id, "Edit Selection", saveEdit, currentText);
   editIdDiv.appendChild(editButton);
+  return editButton;
 }
 
 function deleteItem(aButton) {
+  var rowText = getTodoItemText(aButton.id);
+
   var divParentId = getTodoRowParentId(aButton.id);
   var rowParentDiv = document.getElementById(divParentId);
   var listRoot = document.getElementById(GLOBAL_LIST_ID);
   listRoot.removeChild(rowParentDiv);
 
   ALL_DELETES.push(aButton.id);
+  removeFromDuplicateChecker(rowText);
 }
 
 function appendTodoItem(aId, aItem) {
@@ -151,6 +196,10 @@ function appendTodoItem(aId, aItem) {
 
 function displayTodoItems(todoItems) {
   var listArea = document.getElementById(GLOBAL_LIST_ID);
+  if (todoItems.length == 0) {
+    return;
+  }
+
   var savedItems = JSON.parse(todoItems);
   var nextId = 0;
 

@@ -129,6 +129,7 @@ router.get('/benchmark', function(req, res, next) {
       if (iteration == runCount) {
         var timing = now() - start;
         res.send("Benchmark took: " + timing + "ms for " + runCount + " insertions");
+        testDeleteDatabase(globalConnection);
         return;
       }
 
@@ -209,7 +210,7 @@ function testDeleteDatabase(aClient, aPipeline) {
   var sqlQuery = "DELETE FROM todo;";
   aClient.query(sqlQuery, function(err, results) {
     if (err) console.log(err.message);
-    aPipeline();
+    if (aPipeline) aPipeline();
   });
 }
 
