@@ -4,6 +4,7 @@ var sql = require('pg');
 var url = require('url');
 var globalConnection;
 var assert = require('assert');
+var now = require('performance-now');
 
 function connectToDatabase() {
   var client = new sql.Client({
@@ -37,7 +38,6 @@ function deleteItems(aClient, aRes, aDeleted, aCallback) {
 
 // All the values belong come in array format [ {id : value} ]
 function addItems(aClient, aRes, aNewItems, aCallback) {
-  console.log("Adding items: " + aNewItems);
   for (var i = 0; i < aNewItems.length; i++) {
     // This is particularly ugly :/
     var item = aNewItems[i];
@@ -105,18 +105,41 @@ router.get('/update', function(req, res, next) {
   res.send("update all the things");
 });
 
-router.get('/benchmark', function(req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-});
-
 var TEST_DATA_ID = 1;
 var TEST_DATA_ENTRY = "test data";
 var TEST_EDIT_ENTRY = "edit data";
+
 function getTestData(aId, aValue) {
   var testData = "{ \"" + aId + "\" : \"" + aValue + "\" }";
   var newData = [ JSON.parse(testData) ];
   return newData;
 }
+
+router.get('/benchmark', function(req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  var runBenchmark = function() {
+    var iteration = 0;
+    var runCount = 10000;
+    var start = now();
+    var iterate = function() {
+      var testData = getTestData(iteration, TEST_DATA_ENTRY);
+      iteration++;
+
+      if (iteration == runCount) {
+        var timing = now() - start;
+        res.send("Benchmark took: " + timing + "ms for " + runCount + " insertions");
+        return;
+      }
+
+      addItems(globalConnection, res, testData, iterate);
+    }
+
+    iterate();
+  }
+
+  testDeleteDatabase(globalConnection, runBenchmark);
+});
 
 function testInsertData(aClient, aPipeline) {
   console.log("Test inserting data");
