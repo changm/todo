@@ -68,7 +68,7 @@ function editItems(aClient, aRes, aEditedItems) {
     console.log(value);
 
     var sqlQuery = "UPDATE todo SET note = '" + value + "' WHERE id = " + key + ";";
-    var insert = aClient.query(sqlQuery, function(err, results) {
+    var editQuery = aClient.query(sqlQuery, function(err, results) {
         if (err) console.log(err.message);
         return;
     }); // end select;

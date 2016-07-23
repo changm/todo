@@ -9,7 +9,7 @@ function updateServer() {
   updateData(ALL_DELETES, ALL_NEW, ALL_EDITED);
 
   ALL_NEW = [];
-  //ALL_DELETES = [];
+  ALL_DELETES = [];
   //ALL_EDITED = [];
 }
 
