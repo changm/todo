@@ -3,7 +3,7 @@ var router = express.Router();
 var sql = require('pg');
 var url = require('url');
 
-function getAllRows(res) {
+function getConnection(aCallback, aRes, aArg) {
   var client = new sql.Client({
     user: 'todo',
     password: 'todo',
@@ -15,31 +15,79 @@ function getAllRows(res) {
   client.connect(function(err) {
     if (err) throw err;
 
-    console.log("Connection success");
-
-    var selectAll = client.query("SELECT * FROM todo", function(err, results) {
-      if (err) console.log(err.message);
-      res.send(results.rows);
-    }); // end select;
+    aCallback(client, aRes, aArg);
   });
 }
 
-function deleteItems(aDeleted) {
+function deleteItems(aClient, aRes, aDeleted) {
+  console.log("Deleting items: " + aDeleted);
+   //DELETE FROM todo WHERE id=3;
 
+  for (var i = 0; i < aDeleted.length; i++) {
+    var key = aDeleted[i];
+    console.log(key);
+
+    var sqlQuery = "DELETE FROM todo WHERE id = " + key + ";";
+    console.log("SQL QUERY IS: " + sqlQuery);
+    var deleteQuery = aClient.query(sqlQuery, function(err, results) {
+        if (err) console.log(err.message);
+        return;
+    }); // end select;
+  }
 }
 
-function addItems(aNewItems) {
+function addItems(aClient, aRes, aNewItems) {
+  for (var i = 0; i < aNewItems.length; i++) {
+    // This is particularly ugly :/
+    var item = aNewItems[i];
+    var key = Object.keys(item)[0];
+    var value = item[key];
 
+    console.log(key);
+    console.log(value);
+
+    var sqlQuery = "INSERT INTO todo VALUES (" + key + ", '" + value + "');";
+    var insert = aClient.query(sqlQuery, function(err, results) {
+        if (err) console.log(err.message);
+        return;
+    }); // end select;
+  }
 }
 
-function editItems(aEditedItems) {
+function editItems(aClient, aRes, aEditedItems) {
+  // UPDATE todo SET note='test update' WHERE id=1;
+  console.log("Editing items: " + aEditedItems);
 
+  for (var i = 0; i < aEditedItems.length; i++) {
+    // This is particularly ugly :/
+    var item = aEditedItems[i];
+    var key = Object.keys(item)[0];
+    var value = item[key];
+
+    console.log(key);
+    console.log(value);
+
+    var sqlQuery = "UPDATE todo SET note = '" + value + "' WHERE id = " + key + ";";
+    var insert = aClient.query(sqlQuery, function(err, results) {
+        if (err) console.log(err.message);
+        return;
+    }); // end select;
+  }
+}
+
+function getAllRows(aClient, aRes, arg) {
+  var selectAll = aClient.query("SELECT * FROM todo", function(err, results) {
+      if (err) console.log(err.message);
+      aRes.send(results.rows);
+      return;
+  }); // end select;
 }
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  getAllRows(res);
+  getConnection(getAllRows, res);
+  //getAllRows(res);
 });
 
 // Data comes in deleted, new items, edited items
@@ -56,11 +104,13 @@ router.get('/update', function(req, res, next) {
   var newItems = data[1];
   var edited = data[2];
 
-  console.log(data);
+  console.log(deleted);
+  console.log(newItems);
+  console.log(edited);
 
-  deleteItems(deleted);
-  addItems(newItems);
-  editItems(edited);
+  getConnection(deleteItems, res, deleted);
+  getConnection(addItems, res, newItems);
+  getConnection(editItems, res, edited);
 
   res.send("update all the things");
 });
