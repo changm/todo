@@ -97,7 +97,6 @@ router.get('/update', function(req, res, next) {
   var newItems = data[1];
   var edited = data[2];
 
-  console.log("Connection is: " + globalConnection);
   deleteItems(globalConnection, res, deleted);
   addItems(globalConnection, res, newItems);
   editItems(globalConnection, res, edited);

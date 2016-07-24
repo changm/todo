@@ -6,7 +6,7 @@ function readAllItems(data) {
   alert(data.responseText);
 }
 
-function sendRequest(callback) {
+function readAllItems(callback) {
   var getAllItems = new XMLHttpRequest();
   getAllItems.open("GET", HOST + "save");
   getAllItems.onreadystatechange = function() {
@@ -36,8 +36,3 @@ function updateData(aDeleted, aNewItems, aEditedItems, aCallback) {
   //var updateData = {"data" : [aDeleted, aNewItems, aEditedItems] };
   updateRequest.send();
 }
-
-function recvRequest() {
-
-}
-

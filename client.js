@@ -5,12 +5,13 @@ var ALL_NEW = [];
 var ALL_DELETES = [];
 var ALL_EDITED = [];
 
-function savedData() {
+function alertSavedData() {
   alert("Saved all the data");
 }
 
-function updateServer() {
-  updateData(ALL_DELETES, ALL_NEW, ALL_EDITED, savedData);
+function updateServer(aCallback) {
+  var callback = (typeof aCallback == "function") ? aCallback : alertSavedData;
+  updateData(ALL_DELETES, ALL_NEW, ALL_EDITED, callback);
 
   ALL_NEW = [];
   ALL_DELETES = [];
@@ -72,9 +73,26 @@ function runTests() {
 
   var editedText = getTodoItemText(testId);
   assert(editedText == newText, "Edited text not complete");
-
+  deleteItem(testButton);
   clearItems();
-  alert("All tests passed");
+
+  var verifyDataWritten = function(aTodoItems) {
+    displayTodoItems(aTodoItems);
+    assert(getNumOfItems() == 1, "Server didn't write data");
+    alert("All tests passed");
+  }
+
+  // Integration test
+  var integrationTest = function() {
+    var forceInsert = true; // Need this so we think it's a new item.
+    appendTodoItem(testId, testData, forceInsert);
+    updateServer(function() {
+      clearItems();
+      readAllItems(verifyDataWritten);
+    });
+  }
+
+  integrationTest();
 }
 
 // Returns a button with a label and will call aOnclickEvent when clicked.
@@ -144,9 +162,15 @@ function deleteItem(aButton) {
   removeFromDuplicateChecker(rowText);
 }
 
-function appendTodoItem(aId, aItem) {
+function appendTodoItem(aId, aItem, aForceNewItem) {
   var isNewItem = aItem == undefined;
   var todoText = isNewItem ? document.getElementById("newTodoItem").value : aItem;
+
+  if (aForceNewItem) {
+    // Used during testing, TODO: clean it up since we hand create the data.
+    isNewItem = true;
+    todoText = aItem;
+  }
 
   if (isDuplicate(todoText)) {
     alert("Duplicate item");
@@ -221,7 +245,7 @@ function clearAddButton() {
 function attachEvents() {
   clearAddButton();
   listenToAddButton();
-  sendRequest(displayTodoItems);
+  readAllItems(displayTodoItems);
 }
 
 window.onload = attachEvents;
