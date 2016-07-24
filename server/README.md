@@ -7,6 +7,7 @@ one database named "todo" with schema:
 id (unique int) | note (varchar)
 
 Things that could be improved:
+
 1. Use binary data instead of string data to send over the wire.
 2. Have to fix up CORS properly.
 3. Better responses to the client.
