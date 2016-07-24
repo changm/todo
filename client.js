@@ -37,6 +37,7 @@ function getNumOfItems() {
 function assert(condition, msg) {
   if (!condition) {
     alert(msg);
+    throw new Error("Tests failed " + msg);
   }
 }
 
