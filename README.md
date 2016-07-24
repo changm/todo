@@ -9,5 +9,6 @@ Client side notes. Improvements:
 5. No validation or any front end error messages if the user does some mistake.
 6. Better UI in general rather than have an edit/delete button next to everything.
 7. Auto save in the background after a user saves or edits something.
+8. Can only run client tests once, then have to clear the database.
 
 See server/Readme.MD for server side notes.

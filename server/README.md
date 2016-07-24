@@ -2,6 +2,9 @@ Requires postgres sql - https://github.com/brianc/node-postgres
 Requires cors npm.
 Requires performance-now
 
+To run:
+nodemon start in server folder.
+
 Postgres:
 one database named "todo" with schema:
 id (unique int) | note (varchar)
