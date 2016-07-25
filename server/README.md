@@ -1,9 +1,16 @@
 Requires postgres sql - https://github.com/brianc/node-postgres
+
 Requires cors npm.
+
 Requires performance-now
 
 To run:
+
 nodemon start in server folder.
+
+Routes:
+/save/benchmark - Server benchmark to insert 100K rows
+/save/test - server side tests
 
 Postgres:
 one database named "todo" with schema:
